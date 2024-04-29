@@ -4,29 +4,34 @@ class Board
 {
     public int $width;
     public int $heigth;
+    public int $pxlTileSize;
     public array $tiles;
 
-    function __construct(int $width = 10, int $heigth = 10)
+    function __construct(int $width = 10, int $heigth = 10, int $pxlTileSize = 80)
     {
         $this->width = $width;
         $this->heigth = $heigth;
+        $this->pxlTileSize = $pxlTileSize;
         for ($i = 0; $i < $width; $i++) $this->tiles[chr(65 + $i)] = array_fill(0, $heigth, 0);
     }
 
     function inject_board_styles()
-    {
+    {   
+        echo '<link rel="stylesheet" href="styles.css">';
         echo "<style>";
         echo "#board-container {";
         echo "    display: grid;";
-        echo "    grid-template-columns: repeat(10, 100px);";
-        echo "    grid-template-rows: repeat(10, 100px);";
+        echo "    grid-template-columns: repeat($this->width, $this->pxlTileSize"."px);";
+        echo "    grid-template-rows: repeat($this->heigth, $this->pxlTileSize"."px);";
         echo "    justify-content: center;";
         echo "    align-content: center;";
+        echo "    width: max(100%, calc({$this->pxlTileSize}px * $this->width));";
+        echo "    height: max(100%, calc({$this->pxlTileSize}px * $this->heigth));";
         echo "}";
         echo ".tile {";
-        echo "    height: 100px;";
-        echo "    width: 100px;";
-        echo "    border: solid black 2px;";
+        echo "    height: {$this->pxlTileSize}px;";
+        echo "    width: {$this->pxlTileSize}px;";
+        echo "    outline: solid black 2px;";
         echo "}";
         echo "</style>";
     }
@@ -44,3 +49,5 @@ class Board
 
 $game = new Board();
 $game->create_board();
+
+?>
