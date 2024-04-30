@@ -1,5 +1,11 @@
 <?php
 
+enum TileState {
+    const FREE = 0b00;
+    const EXCLUDED = 0b01;
+    const OCCUPIED = 0b10;
+}
+
 class Board
 {
     public int $width;
@@ -12,7 +18,7 @@ class Board
         $this->width = $width;
         $this->heigth = $heigth;
         $this->pxlTileSize = $pxlTileSize;
-        for ($i = 0; $i < $width; $i++) $this->tiles[chr(65 + $i)] = array_fill(0, $heigth, 0);
+        for ($i = 0; $i < $width; $i++) $this->tiles[$i] = array_fill(0, $heigth, TileState::FREE);
     }
 
     function inject_board_styles()
