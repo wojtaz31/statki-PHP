@@ -48,7 +48,10 @@ class Board
         $this->inject_board_styles();
         echo '<div id="board-container">';
         for ($i = 0; $i < $this->height; $i++) {
-            for ($j = 0; $j < $this->width; $j++) echo '<div class="tile"></div>';
+            for ($j = 0; $j < $this->width; $j++) {
+                $class = chr(65 + $i) . $j;
+                echo "<div class=\"tile $class\"></div>";
+            }
         }
         echo '</div>';
     }
@@ -66,10 +69,9 @@ class Board
             if ($this->tiles[$x][$y] === TileState::FREE) $valid = true;
         }
         $this->tiles[$x][$y] = TileState::OCCUPIED;
+        $class = chr(65 + $x) . $y;
+        echo "<script>document.querySelector('.$class').classList.add('one-mast');</script>";
         $this->excludeAdjacent($x, $y);
-        echo '<pre>';
-        print_r($this->tiles);
-        echo '</pre>';
     }
 
     function excludeAdjacent(int $x, int $y)
@@ -78,6 +80,11 @@ class Board
         $this->excludeCell($x + 1, $y);
         $this->excludeCell($x, $y - 1);
         $this->excludeCell($x, $y + 1);
+
+        $this->excludeCell($x - 1, $y - 1);
+        $this->excludeCell($x + 1, $y - 1);
+        $this->excludeCell($x - 1, $y + 1);
+        $this->excludeCell($x + 1, $y + 1);
     }
 
     private function excludeCell(int $x, int $y)
@@ -94,4 +101,3 @@ $game = new Board();
 $game->create_board();
 $game->placeSingleShip();
 $game->placeSingleShip();
-?>
