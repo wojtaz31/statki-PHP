@@ -74,6 +74,58 @@ class Board
         $this->excludeAdjacent($x, $y);
     }
 
+    private function canPlaceShipHorizontally(int $startX, int $startY, int  $shipSize)
+    {
+        if ($startX +  $shipSize > $this->width) return false;
+
+        for ($i = $startX; $i < $startX +  $shipSize; $i++) {
+            if ($this->tiles[$i][$startY] !== TileState::FREE) return false;
+        }
+
+        return true;
+    }
+
+    private function canPlaceShipVertically(int $startX, int $startY, int $shipSize)
+    {
+        if ($startY + $shipSize > $this->height) return false;
+
+        for ($i = $startY; $i < $startY +  $shipSize; $i++) {
+            if ($this->tiles[$startX][$i] !== TileState::FREE) return false;
+        }
+
+        return true;
+    }
+
+    public function placeDoubleShip()
+    {
+        $possiblePlacements = [];
+
+        for ($x = 0; $x < $this->width; $x++) {
+            for ($y = 0; $y < $this->height; $y++) {
+                if ($this->canPlaceShipHorizontally($x, $y, 2)) {
+                    array_push($possiblePlacements, [[$x, $y], [$x + 1, $y]]);
+                }
+                if ($this->canPlaceShipVertically($x, $y, 2)) {
+                    array_push($possiblePlacements, [[$x, $y], [$x, $y + 1]]);
+                }
+            }
+        }
+
+        if (!empty($possiblePlacements)) {
+            $placement = $possiblePlacements[array_rand($possiblePlacements)];
+            $classString = "";
+            foreach ($placement as $cord) {
+                $this->tiles[$cord[0]][$cord[1]] = TileState::OCCUPIED;
+                $classString .= ".".chr(65 + $cord[0]).$cord[1].",";
+                $this->excludeAdjacent($cord[0], $cord[1]);
+            }
+            $classString = substr($classString, 0, -1);
+            echo "<script>";
+            echo "document.querySelectorAll('$classString').forEach(e => e.classList.add('two-mast'));";
+            echo "</script>";
+        }
+    }
+
     function excludeAdjacent(int $x, int $y)
     {
         $this->excludeCell($x - 1, $y);
@@ -99,5 +151,11 @@ class Board
 
 $game = new Board();
 $game->create_board();
+
+$game->placeDoubleShip();
+$game->placeDoubleShip();
+$game->placeDoubleShip();
+$game->placeSingleShip();
+$game->placeSingleShip();
 $game->placeSingleShip();
 $game->placeSingleShip();
