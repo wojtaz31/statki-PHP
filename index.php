@@ -22,6 +22,22 @@ class Board
         for ($i = 0; $i < $width; $i++) $this->tiles[$i] = array_fill(0, $height, TileState::FREE);
     }
 
+    private function getUnavailableTiles()
+    {
+        $unavailableTiles = [];
+
+        for ($x = 0; $x < $this->width; $x++) {
+            for ($y = 0; $y < $this->height; $y++) {
+                if ($this->tiles[$x][$y] === TileState::EXCLUDED || $this->tiles[$x][$y] === TileState::OCCUPIED) {
+                    array_push($unavailableTiles, [$x, $y]);
+                }
+            }
+        }
+
+        return $unavailableTiles;
+    }
+
+
     function inject_board_styles()
     {
         echo '<link rel="stylesheet" href="styles.css">';
@@ -96,7 +112,17 @@ class Board
         return true;
     }
 
-    public function placeDoubleShip()
+    private function updatePossiblePlacements(array &$possiblePlacements)
+    {
+        $unavailableTiles = $this->getUnavailableTiles();
+
+        $possiblePlacements = array_filter($possiblePlacements, function ($placement) use ($unavailableTiles) {
+            return !in_array($placement[0], $unavailableTiles) && !in_array($placement[1], $unavailableTiles);
+        });
+    }
+
+
+    public function placeDoubleShip(int $number)
     {
         $possiblePlacements = [];
 
@@ -111,18 +137,21 @@ class Board
             }
         }
 
-        if (!empty($possiblePlacements)) {
-            $placement = $possiblePlacements[array_rand($possiblePlacements)];
-            $classString = "";
-            foreach ($placement as $cord) {
-                $this->tiles[$cord[0]][$cord[1]] = TileState::OCCUPIED;
-                $classString .= ".".chr(65 + $cord[0]).$cord[1].",";
-                $this->excludeAdjacent($cord[0], $cord[1]);
+        for ($i = 0; $i < $number; $i++) {
+            if (!empty($possiblePlacements)) {
+                $placement = $possiblePlacements[array_rand($possiblePlacements)];
+                $classString = "";
+                foreach ($placement as $cord) {
+                    $this->tiles[$cord[0]][$cord[1]] = TileState::OCCUPIED;
+                    $classString .= "." . chr(65 + $cord[0]) . $cord[1] . ",";
+                    $this->excludeAdjacent($cord[0], $cord[1]);
+                }
+                $classString = substr($classString, 0, -1);
+                echo "<script>";
+                echo "document.querySelectorAll('$classString').forEach(e => e.classList.add('two-mast'));";
+                echo "</script>";
+                $this->updatePossiblePlacements($possiblePlacements);
             }
-            $classString = substr($classString, 0, -1);
-            echo "<script>";
-            echo "document.querySelectorAll('$classString').forEach(e => e.classList.add('two-mast'));";
-            echo "</script>";
         }
     }
 
@@ -152,9 +181,7 @@ class Board
 $game = new Board();
 $game->create_board();
 
-$game->placeDoubleShip();
-$game->placeDoubleShip();
-$game->placeDoubleShip();
+$game->placeDoubleShip(3);
 $game->placeSingleShip();
 $game->placeSingleShip();
 $game->placeSingleShip();
