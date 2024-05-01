@@ -116,10 +116,10 @@ class Board
 
     private function checkTile(int $x, int $y)
     {
-        if ($x < 0 || $y < 0 || $x > $this->width -1 || $y > $this->height - 1) {
+        if ($x < 0 || $y < 0 || $x > $this->width - 1 || $y > $this->height - 1) {
             return false;
         }
-        if($this->tiles[$x][$y] === TileState::FREE) return true;
+        if ($this->tiles[$x][$y] === TileState::FREE) return true;
         else return false;
     }
 
@@ -128,7 +128,8 @@ class Board
         $unavailableTiles = $this->getUnavailableTiles();
 
         $possiblePlacements = array_filter($possiblePlacements, function ($placement) use ($unavailableTiles) {
-            return !in_array($placement[0], $unavailableTiles) && !in_array($placement[1], $unavailableTiles);
+            foreach ($placement as $coord) if (in_array($coord, $unavailableTiles)) return false;
+            return true;
         });
     }
 
@@ -179,18 +180,18 @@ class Board
                     array_push($possiblePlacements, [[$x, $y], [$x, $y + 1], [$x, $y + 2]]);
                 }
                 if ($this->checkTile($x, $y)) {
-                    if ($this->checkTile($x, $y - 1) && $this->checkTile($x + 1, $y - 1)){
-                       array_push($possiblePlacements, [[$x, $y], [$x, $y - 1], [$x + 1, $y - 1]]);
+                    if ($this->checkTile($x, $y - 1) && $this->checkTile($x + 1, $y - 1)) {
+                        array_push($possiblePlacements, [[$x, $y], [$x, $y - 1], [$x + 1, $y - 1]]);
                     }
-                    if ($this->checkTile($x, $y + 1) && $this->checkTile($x + 1, $y + 1)){
+                    if ($this->checkTile($x, $y + 1) && $this->checkTile($x + 1, $y + 1)) {
                         array_push($possiblePlacements, [[$x, $y], [$x, $y + 1], [$x + 1, $y + 1]]);
-                     }
-                     if ($this->checkTile($x + 1, $y) && $this->checkTile($x + 1, $y - 1)){
+                    }
+                    if ($this->checkTile($x + 1, $y) && $this->checkTile($x + 1, $y - 1)) {
                         array_push($possiblePlacements, [[$x, $y], [$x + 1, $y], [$x + 1, $y - 1]]);
-                     }
-                     if ($this->checkTile($x + 1, $y) && $this->checkTile($x + 1, $y + 1)){
+                    }
+                    if ($this->checkTile($x + 1, $y) && $this->checkTile($x + 1, $y + 1)) {
                         array_push($possiblePlacements, [[$x, $y], [$x + 1, $y], [$x + 1, $y + 1]]);
-                     }
+                    }
                 }
             }
         }
@@ -238,6 +239,6 @@ class Board
 
 $game = new Board();
 $game->create_board();
-$game->placeTripleShip(1);
+$game->placeTripleShip(2);
 $game->placeDoubleShip(3);
 $game->placeSingleShip(4);
