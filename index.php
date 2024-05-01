@@ -226,6 +226,31 @@ class Board
         }
     }
 
+    function placeQuadraShip(int $number)
+    {
+        $possiblePlacements = [];
+
+        for ($x = 0; $x < $this->width; $x++) {
+            for ($y = 0; $y < $this->height; $y++) {
+                if ($this->canPlaceShipHorizontally($x, $y, 4)) {
+                    array_push($possiblePlacements, [[$x, $y], [$x + 1, $y], [$x + 2, $y], [$x + 3, $y]]);
+                }
+                if ($this->canPlaceShipVertically($x, $y, 4)) {
+                    array_push($possiblePlacements, [[$x, $y], [$x, $y + 1], [$x, $y + 2], [$x, $y + 3]]);
+                }
+                if ($this->checkTile($x, $y)) {}
+            }
+        }
+
+        for ($i = 0; $i < $number; $i++) {
+            if (!empty($possiblePlacements)) {
+                $placement = $possiblePlacements[array_rand($possiblePlacements)];
+                $this->placeShip($placement, 4);
+                $this->updatePossiblePlacements($possiblePlacements);
+            }
+        }
+    }
+
     function excludeAdjacent(int $x, int $y)
     {
         $this->excludeCell($x - 1, $y);
@@ -251,6 +276,7 @@ class Board
 
 $game = new Board();
 $game->create_board();
+$game->placeQuadraShip(1);
 $game->placeTripleShip(2);
 $game->placeDoubleShip(3);
 $game->placeSingleShip(4);
