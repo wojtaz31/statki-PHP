@@ -133,6 +133,36 @@ class Board
         });
     }
 
+    private function getShipClass(int $shipSize)
+    {
+        switch ($shipSize) {
+            case 1:
+                return 'one-mast';
+            case 2:
+                return 'two-mast';
+            case 3:
+                return 'three-mast';
+            case 4:
+                return 'four-mast';
+            default:
+                return '';
+        }
+    }
+
+    private function placeShip(array $placement, int $shipSize)
+    {
+        $tileClass = $this->getShipClass($shipSize);
+        $classString = "";
+        foreach ($placement as $cord) {
+            $this->tiles[$cord[0]][$cord[1]] = TileState::OCCUPIED;
+            $classString .= "." . chr(65 + $cord[0]) . $cord[1] . ",";
+            $this->excludeAdjacent($cord[0], $cord[1]);
+        }
+        $classString = substr($classString, 0, -1);
+        echo "<script>";
+        echo "document.querySelectorAll('$classString').forEach(e => e.classList.add('$tileClass'));";
+        echo "</script>";
+    }
 
     public function placeDoubleShip(int $number)
     {
@@ -152,16 +182,7 @@ class Board
         for ($i = 0; $i < $number; $i++) {
             if (!empty($possiblePlacements)) {
                 $placement = $possiblePlacements[array_rand($possiblePlacements)];
-                $classString = "";
-                foreach ($placement as $cord) {
-                    $this->tiles[$cord[0]][$cord[1]] = TileState::OCCUPIED;
-                    $classString .= "." . chr(65 + $cord[0]) . $cord[1] . ",";
-                    $this->excludeAdjacent($cord[0], $cord[1]);
-                }
-                $classString = substr($classString, 0, -1);
-                echo "<script>";
-                echo "document.querySelectorAll('$classString').forEach(e => e.classList.add('two-mast'));";
-                echo "</script>";
+                $this->placeShip($placement, 2);
                 $this->updatePossiblePlacements($possiblePlacements);
             }
         }
@@ -199,16 +220,7 @@ class Board
         for ($i = 0; $i < $number; $i++) {
             if (!empty($possiblePlacements)) {
                 $placement = $possiblePlacements[array_rand($possiblePlacements)];
-                $classString = "";
-                foreach ($placement as $cord) {
-                    $this->tiles[$cord[0]][$cord[1]] = TileState::OCCUPIED;
-                    $classString .= "." . chr(65 + $cord[0]) . $cord[1] . ",";
-                    $this->excludeAdjacent($cord[0], $cord[1]);
-                }
-                $classString = substr($classString, 0, -1);
-                echo "<script>";
-                echo "document.querySelectorAll('$classString').forEach(e => e.classList.add('three-mast'));";
-                echo "</script>";
+                $this->placeShip($placement, 3);
                 $this->updatePossiblePlacements($possiblePlacements);
             }
         }
