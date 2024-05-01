@@ -114,6 +114,15 @@ class Board
         return true;
     }
 
+    private function checkTile(int $x, int $y)
+    {
+        if ($x < 0 || $y < 0 || $x > $this->width -1 || $y > $this->height - 1) {
+            return false;
+        }
+        if($this->tiles[$x][$y] === TileState::FREE) return true;
+        else return false;
+    }
+
     private function updatePossiblePlacements(array &$possiblePlacements)
     {
         $unavailableTiles = $this->getUnavailableTiles();
@@ -157,6 +166,53 @@ class Board
         }
     }
 
+    function placeTripleShip(int $number)
+    {
+        $possiblePlacements = [];
+
+        for ($x = 0; $x < $this->width; $x++) {
+            for ($y = 0; $y < $this->height; $y++) {
+                if ($this->canPlaceShipHorizontally($x, $y, 3)) {
+                    array_push($possiblePlacements, [[$x, $y], [$x + 1, $y], [$x + 2, $y]]);
+                }
+                if ($this->canPlaceShipVertically($x, $y, 3)) {
+                    array_push($possiblePlacements, [[$x, $y], [$x, $y + 1], [$x, $y + 2]]);
+                }
+                if ($this->checkTile($x, $y)) {
+                    if ($this->checkTile($x, $y - 1) && $this->checkTile($x + 1, $y - 1)){
+                       array_push($possiblePlacements, [[$x, $y], [$x, $y - 1], [$x + 1, $y - 1]]);
+                    }
+                    if ($this->checkTile($x, $y + 1) && $this->checkTile($x + 1, $y + 1)){
+                        array_push($possiblePlacements, [[$x, $y], [$x, $y + 1], [$x + 1, $y + 1]]);
+                     }
+                     if ($this->checkTile($x + 1, $y) && $this->checkTile($x + 1, $y - 1)){
+                        array_push($possiblePlacements, [[$x, $y], [$x + 1, $y], [$x + 1, $y - 1]]);
+                     }
+                     if ($this->checkTile($x + 1, $y) && $this->checkTile($x + 1, $y + 1)){
+                        array_push($possiblePlacements, [[$x, $y], [$x + 1, $y], [$x + 1, $y + 1]]);
+                     }
+                }
+            }
+        }
+
+        for ($i = 0; $i < $number; $i++) {
+            if (!empty($possiblePlacements)) {
+                $placement = $possiblePlacements[array_rand($possiblePlacements)];
+                $classString = "";
+                foreach ($placement as $cord) {
+                    $this->tiles[$cord[0]][$cord[1]] = TileState::OCCUPIED;
+                    $classString .= "." . chr(65 + $cord[0]) . $cord[1] . ",";
+                    $this->excludeAdjacent($cord[0], $cord[1]);
+                }
+                $classString = substr($classString, 0, -1);
+                echo "<script>";
+                echo "document.querySelectorAll('$classString').forEach(e => e.classList.add('three-mast'));";
+                echo "</script>";
+                $this->updatePossiblePlacements($possiblePlacements);
+            }
+        }
+    }
+
     function excludeAdjacent(int $x, int $y)
     {
         $this->excludeCell($x - 1, $y);
@@ -182,6 +238,6 @@ class Board
 
 $game = new Board();
 $game->create_board();
-
+$game->placeTripleShip(1);
 $game->placeDoubleShip(3);
 $game->placeSingleShip(4);
