@@ -72,22 +72,24 @@ class Board
         echo '</div>';
     }
 
-    function placeSingleShip()
+    function placeSingleShip(int $number)
     {
-        $valid = false;
-        $x = 0;
-        $y = 0;
+        for ($i = 0; $i < $number; $i++) {
+            $valid = false;
+            $x = 0;
+            $y = 0;
 
-        while (!$valid) {
-            $x = rand(0, $this->width - 1);
-            $y = rand(0, $this->height - 1);
+            while (!$valid) {
+                $x = rand(0, $this->width - 1);
+                $y = rand(0, $this->height - 1);
 
-            if ($this->tiles[$x][$y] === TileState::FREE) $valid = true;
+                if ($this->tiles[$x][$y] === TileState::FREE) $valid = true;
+            }
+            $this->tiles[$x][$y] = TileState::OCCUPIED;
+            $class = chr(65 + $x) . $y;
+            echo "<script>document.querySelector('.$class').classList.add('one-mast');</script>";
+            $this->excludeAdjacent($x, $y);
         }
-        $this->tiles[$x][$y] = TileState::OCCUPIED;
-        $class = chr(65 + $x) . $y;
-        echo "<script>document.querySelector('.$class').classList.add('one-mast');</script>";
-        $this->excludeAdjacent($x, $y);
     }
 
     private function canPlaceShipHorizontally(int $startX, int $startY, int  $shipSize)
@@ -182,7 +184,4 @@ $game = new Board();
 $game->create_board();
 
 $game->placeDoubleShip(3);
-$game->placeSingleShip();
-$game->placeSingleShip();
-$game->placeSingleShip();
-$game->placeSingleShip();
+$game->placeSingleShip(4);
