@@ -93,7 +93,9 @@ class Board
     }
 
     private function canPlaceShipHorizontally(int $startX, int $startY, int  $shipSize)
-    {
+    {   
+        if ($startX < 0 || $startY < 0) return false;
+        if ($startY > $this->height - 1) return false;
         if ($startX +  $shipSize > $this->width) return false;
 
         for ($i = $startX; $i < $startX +  $shipSize; $i++) {
@@ -105,6 +107,8 @@ class Board
 
     private function canPlaceShipVertically(int $startX, int $startY, int $shipSize)
     {
+        if ($startX < 0 || $startY < 0) return false;
+        if ($startX > $this->width - 1) return false;
         if ($startY + $shipSize > $this->height) return false;
 
         for ($i = $startY; $i < $startY +  $shipSize; $i++) {
@@ -238,7 +242,43 @@ class Board
                 if ($this->canPlaceShipVertically($x, $y, 4)) {
                     array_push($possiblePlacements, [[$x, $y], [$x, $y + 1], [$x, $y + 2], [$x, $y + 3]]);
                 }
-                if ($this->checkTile($x, $y)) {}
+                if ($this->checkTile($x, $y)) {
+                    if ($this->canPlaceShipHorizontally($x - 1, $y - 1, 3)) {
+                        array_push($possiblePlacements, [[$x, $y], [$x - 1, $y - 1], [$x, $y - 1], [$x + 1, $y - 1]]);
+                    }
+                    if ($this->canPlaceShipHorizontally($x - 1, $y + 1, 3)) {
+                        array_push($possiblePlacements, [[$x, $y], [$x - 1, $y + 1], [$x, $y + 1], [$x + 1, $y + 1]]);
+                    }
+                    if ($this->canPlaceShipVertically($x - 1, $y - 1, 3)) {
+                        array_push($possiblePlacements, [[$x, $y], [$x - 1, $y - 1], [$x - 1, $y], [$x - 1, $y + 1]]);
+                    }
+                    if ($this->canPlaceShipVertically($x + 1, $y - 1, 3)) {
+                        array_push($possiblePlacements, [[$x, $y], [$x + 1, $y - 1], [$x + 1, $y], [$x + 1, $y + 1]]);
+                    }
+                    if ($this->checkTile($x - 1, $y) && $this->checkTile($x, $y - 1) && $this->checkTile($x - 1, $y - 1)) {
+                        array_push($possiblePlacements, [[$x, $y], [$x - 1, $y], [$x, $y - 1], [$x - 1, $y - 1]]);
+                    }
+                    if ($this->checkTile($x + 1, $y) && $this->checkTile($x, $y - 1) && $this->checkTile($x + 1, $y - 1)) {
+                        array_push($possiblePlacements, [[$x, $y], [$x + 1, $y], [$x, $y - 1], [$x + 1, $y - 1]]);
+                    }
+                }
+                if ($this->canPlaceShipHorizontally($x - 1, $y + 1, 3)) {
+                    if($this->checkTile($x - 1, $y)) array_push($possiblePlacements, [[$x - 1, $y], [$x - 1, $y + 1], [$x, $y + 1], [$x + 1, $y + 1]]);
+                    if($this->checkTile($x + 1, $y)) array_push($possiblePlacements, [[$x + 1, $y], [$x - 1, $y + 1], [$x, $y + 1], [$x + 1, $y + 1]]);
+                }
+                if ($this->canPlaceShipHorizontally($x - 1, $y - 1, 3)) {
+                    if($this->checkTile($x - 1, $y)) array_push($possiblePlacements, [[$x - 1, $y], [$x - 1, $y - 1], [$x, $y - 1], [$x + 1, $y - 1]]);
+                    if($this->checkTile($x + 1, $y)) array_push($possiblePlacements, [[$x + 1, $y], [$x - 1, $y - 1], [$x, $y - 1], [$x + 1, $y - 1]]);
+                }
+                if ($this->canPlaceShipVertically($x - 1, $y - 1, 3)) {
+                    if($this->checkTile($x, $y - 1)) array_push($possiblePlacements, [[$x, $y - 1], [$x - 1, $y - 1], [$x - 1, $y], [$x - 1, $y + 1]]);
+                    if($this->checkTile($x, $y + 1)) array_push($possiblePlacements, [[$x, $y + 1], [$x - 1, $y - 1], [$x - 1, $y], [$x - 1, $y + 1]]);
+                }
+                if ($this->canPlaceShipVertically($x + 1, $y - 1, 3)) {
+                    if($this->checkTile($x, $y - 1)) array_push($possiblePlacements, [[$x, $y - 1], [$x + 1, $y - 1], [$x + 1, $y], [$x + 1, $y + 1]]);
+                    if($this->checkTile($x, $y + 1)) array_push($possiblePlacements, [[$x, $y + 1], [$x + 1, $y - 1], [$x + 1, $y], [$x + 1, $y + 1]]);
+                }
+
             }
         }
 
