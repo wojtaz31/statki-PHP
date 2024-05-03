@@ -93,7 +93,7 @@ class Board
     }
 
     private function canPlaceShipHorizontally(int $startX, int $startY, int  $shipSize)
-    {   
+    {
         if ($startX < 0 || $startY < 0) return false;
         if ($startY > $this->height - 1) return false;
         if ($startX +  $shipSize > $this->width) return false;
@@ -148,6 +148,8 @@ class Board
                 return 'three-mast';
             case 4:
                 return 'four-mast';
+            case 5:
+                return 'five-mast';
             default:
                 return '';
         }
@@ -263,22 +265,21 @@ class Board
                     }
                 }
                 if ($this->canPlaceShipHorizontally($x - 1, $y + 1, 3)) {
-                    if($this->checkTile($x - 1, $y)) array_push($possiblePlacements, [[$x - 1, $y], [$x - 1, $y + 1], [$x, $y + 1], [$x + 1, $y + 1]]);
-                    if($this->checkTile($x + 1, $y)) array_push($possiblePlacements, [[$x + 1, $y], [$x - 1, $y + 1], [$x, $y + 1], [$x + 1, $y + 1]]);
+                    if ($this->checkTile($x - 1, $y)) array_push($possiblePlacements, [[$x - 1, $y], [$x - 1, $y + 1], [$x, $y + 1], [$x + 1, $y + 1]]);
+                    if ($this->checkTile($x + 1, $y)) array_push($possiblePlacements, [[$x + 1, $y], [$x - 1, $y + 1], [$x, $y + 1], [$x + 1, $y + 1]]);
                 }
                 if ($this->canPlaceShipHorizontally($x - 1, $y - 1, 3)) {
-                    if($this->checkTile($x - 1, $y)) array_push($possiblePlacements, [[$x - 1, $y], [$x - 1, $y - 1], [$x, $y - 1], [$x + 1, $y - 1]]);
-                    if($this->checkTile($x + 1, $y)) array_push($possiblePlacements, [[$x + 1, $y], [$x - 1, $y - 1], [$x, $y - 1], [$x + 1, $y - 1]]);
+                    if ($this->checkTile($x - 1, $y)) array_push($possiblePlacements, [[$x - 1, $y], [$x - 1, $y - 1], [$x, $y - 1], [$x + 1, $y - 1]]);
+                    if ($this->checkTile($x + 1, $y)) array_push($possiblePlacements, [[$x + 1, $y], [$x - 1, $y - 1], [$x, $y - 1], [$x + 1, $y - 1]]);
                 }
                 if ($this->canPlaceShipVertically($x - 1, $y - 1, 3)) {
-                    if($this->checkTile($x, $y - 1)) array_push($possiblePlacements, [[$x, $y - 1], [$x - 1, $y - 1], [$x - 1, $y], [$x - 1, $y + 1]]);
-                    if($this->checkTile($x, $y + 1)) array_push($possiblePlacements, [[$x, $y + 1], [$x - 1, $y - 1], [$x - 1, $y], [$x - 1, $y + 1]]);
+                    if ($this->checkTile($x, $y - 1)) array_push($possiblePlacements, [[$x, $y - 1], [$x - 1, $y - 1], [$x - 1, $y], [$x - 1, $y + 1]]);
+                    if ($this->checkTile($x, $y + 1)) array_push($possiblePlacements, [[$x, $y + 1], [$x - 1, $y - 1], [$x - 1, $y], [$x - 1, $y + 1]]);
                 }
                 if ($this->canPlaceShipVertically($x + 1, $y - 1, 3)) {
-                    if($this->checkTile($x, $y - 1)) array_push($possiblePlacements, [[$x, $y - 1], [$x + 1, $y - 1], [$x + 1, $y], [$x + 1, $y + 1]]);
-                    if($this->checkTile($x, $y + 1)) array_push($possiblePlacements, [[$x, $y + 1], [$x + 1, $y - 1], [$x + 1, $y], [$x + 1, $y + 1]]);
+                    if ($this->checkTile($x, $y - 1)) array_push($possiblePlacements, [[$x, $y - 1], [$x + 1, $y - 1], [$x + 1, $y], [$x + 1, $y + 1]]);
+                    if ($this->checkTile($x, $y + 1)) array_push($possiblePlacements, [[$x, $y + 1], [$x + 1, $y - 1], [$x + 1, $y], [$x + 1, $y + 1]]);
                 }
-
             }
         }
 
@@ -286,6 +287,45 @@ class Board
             if (!empty($possiblePlacements)) {
                 $placement = $possiblePlacements[array_rand($possiblePlacements)];
                 $this->placeShip($placement, 4);
+                $this->updatePossiblePlacements($possiblePlacements);
+            }
+        }
+    }
+
+    function placeQunitaShip(int $number)
+    {
+        $possiblePlacements = [];
+
+        for ($x = 0; $x < $this->width; $x++) {
+            for ($y = 0; $y < $this->height; $y++) {
+                if ($this->canPlaceShipHorizontally($x - 1, $y, 3) && $this->canPlaceShipVertically($x, $y - 1, 3)) {
+                    array_push($possiblePlacements, [[$x - 1, $y], [$x, $y - 1], [$x, $y], [$x + 1, $y], [$x, $y + 1]]);
+                }
+                if ($this->canPlaceShipVertically($x - 1, $y - 1, 3) && $this->canPlaceShipHorizontally($x - 1, $y + 1, 3)) {
+                    array_push($possiblePlacements, [[$x - 1, $y - 1], [$x - 1, $y], [$x - 1, $y + 1], [$x, $y + 1], [$x + 1, $y + 1]]);
+                }
+                if ($this->canPlaceShipVertically($x + 1, $y - 1, 3) && $this->canPlaceShipHorizontally($x - 1, $y - 1, 3)) {
+                    array_push($possiblePlacements, [[$x - 1, $y - 1], [$x + 1, $y], [$x + 1, $y - 1], [$x, $y - 1], [$x + 1, $y + 1]]);
+                }
+                if ($this->canPlaceShipVertically($x - 1, $y - 1, 3) && $this->checkTile($x, $y - 1) && $this->checkTile($x, $y + 1)) {
+                    array_push($possiblePlacements, [[$x - 1, $y - 1], [$x - 1, $y], [$x - 1, $y + 1], [$x, $y - 1], [$x, $y + 1]]);
+                }
+                if ($this->canPlaceShipVertically($x + 1, $y - 1, 3) && $this->checkTile($x, $y - 1) && $this->checkTile($x, $y + 1)) {
+                    array_push($possiblePlacements, [[$x + 1, $y - 1], [$x + 1, $y], [$x + 1, $y + 1], [$x, $y - 1], [$x, $y + 1]]);
+                }
+                if ($this->canPlaceShipHorizontally($x - 1, $y - 1, 3) && $this->checkTile($x - 1, $y) && $this->checkTile($x + 1, $y) ) {
+                    array_push($possiblePlacements, [[$x - 1, $y - 1], [$x, $y - 1], [$x + 1, $y - 1], [$x - 1, $y], [$x + 1, $y]]);
+                }
+                if ($this->canPlaceShipHorizontally($x - 1, $y + 1, 3) && $this->checkTile($x - 1, $y) && $this->checkTile($x + 1, $y) ) {
+                    array_push($possiblePlacements, [[$x - 1, $y + 1], [$x, $y + 1], [$x + 1, $y + 1], [$x - 1, $y], [$x + 1, $y]]);
+                }
+            }
+        }
+
+        for ($i = 0; $i < $number; $i++) {
+            if (!empty($possiblePlacements)) {
+                $placement = $possiblePlacements[array_rand($possiblePlacements)];
+                $this->placeShip($placement, 5);
                 $this->updatePossiblePlacements($possiblePlacements);
             }
         }
@@ -316,6 +356,7 @@ class Board
 
 $game = new Board();
 $game->create_board();
+$game->placeQunitaShip(1);
 $game->placeQuadraShip(1);
 $game->placeTripleShip(2);
 $game->placeDoubleShip(3);
