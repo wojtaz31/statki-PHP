@@ -354,10 +354,10 @@ class Board
     }
 }
 
-$game = new Board();
-$game->create_board();
-$game->placeQunitaShip(1);
-$game->placeQuadraShip(1);
-$game->placeTripleShip(2);
-$game->placeDoubleShip(3);
-$game->placeSingleShip(4);
+if ($_SERVER["REQUEST_METHOD"] == "GET" && isset($_GET['width']) && isset($_GET['height']) && $_GET['pxlTileSize']) {
+    $width =  intval($_GET['width']);
+    $height = intval($_GET['height']);
+    $pxlTileSize = intval($_GET['pxlTileSize']);
+    $game = new Board($width, $height, $pxlTileSize);
+    $game->create_board();
+}
