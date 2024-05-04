@@ -67,7 +67,7 @@ input[type="submit"] {
     cursor: pointer;
 }
 
-label[for="importFile"]{
+label[for="importFile"] {
     font-size: 110%;
 }
 
@@ -75,4 +75,20 @@ label[for="importFile"]{
     padding: 10px;
     border-radius: 4px;
     font-size: 15px;
+}
+
+#importWrapper {
+    display: flex;
+    justify-content: center;
+    height: 20%;
+}
+
+#importWrapper>label {
+    width: 65%;
+    align-self: center;
+}
+
+input[type="checkbox"] {
+    font-size: 1em;
+    width: 15%;
 }

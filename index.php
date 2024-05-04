@@ -19,7 +19,7 @@ class Board
         $this->width = $width;
         $this->height = $height;
         $this->pxlTileSize = $pxlTileSize;
-        for ($i = 0; $i < $width; $i++) $this->tiles[$i] = array_fill(0, $height, TileState::FREE);
+        for ($i = 0; $i < $width; $i++) $this->tiles[$i] = array_fill(0, $height, [TileState::FREE, 0]);
     }
 
     private function getUnavailableTiles()
@@ -28,7 +28,7 @@ class Board
 
         for ($x = 0; $x < $this->width; $x++) {
             for ($y = 0; $y < $this->height; $y++) {
-                if ($this->tiles[$x][$y] === TileState::EXCLUDED || $this->tiles[$x][$y] === TileState::OCCUPIED) {
+                if ($this->tiles[$x][$y][0] === TileState::EXCLUDED || $this->tiles[$x][$y][0] === TileState::OCCUPIED) {
                     array_push($unavailableTiles, [$x, $y]);
                 }
             }
@@ -84,10 +84,11 @@ class Board
                 $x = rand(0, $this->width - 1);
                 $y = rand(0, $this->height - 1);
 
-                if ($this->tiles[$x][$y] === TileState::FREE) $valid = true;
+                if ($this->tiles[$x][$y][0] === TileState::FREE) $valid = true;
                 $counter += 1;
             }
-            $this->tiles[$x][$y] = TileState::OCCUPIED;
+            $this->tiles[$x][$y][0] = TileState::OCCUPIED;
+            $this->tiles[$x][$y][1] = 1;
             $class = chr(65 + $x) . $y;
             echo "<script>document.querySelector('.$class').classList.add('one-mast');</script>";
             $this->excludeAdjacent($x, $y);
@@ -101,7 +102,7 @@ class Board
         if ($startX +  $shipSize > $this->width) return false;
 
         for ($i = $startX; $i < $startX +  $shipSize; $i++) {
-            if ($this->tiles[$i][$startY] !== TileState::FREE) return false;
+            if ($this->tiles[$i][$startY][0] !== TileState::FREE) return false;
         }
 
         return true;
@@ -114,7 +115,7 @@ class Board
         if ($startY + $shipSize > $this->height) return false;
 
         for ($i = $startY; $i < $startY +  $shipSize; $i++) {
-            if ($this->tiles[$startX][$i] !== TileState::FREE) return false;
+            if ($this->tiles[$startX][$i][0] !== TileState::FREE) return false;
         }
 
         return true;
@@ -142,6 +143,8 @@ class Board
     private function getShipClass(int $shipSize)
     {
         switch ($shipSize) {
+            case 0:
+                return '';
             case 1:
                 return 'one-mast';
             case 2:
@@ -162,7 +165,8 @@ class Board
         $tileClass = $this->getShipClass($shipSize);
         $classString = "";
         foreach ($placement as $cord) {
-            $this->tiles[$cord[0]][$cord[1]] = TileState::OCCUPIED;
+            $this->tiles[$cord[0]][$cord[1]][0] = TileState::OCCUPIED;
+            $this->tiles[$cord[0]][$cord[1]][1] = $shipSize;
             $classString .= "." . chr(65 + $cord[0]) . $cord[1] . ",";
             $this->excludeAdjacent($cord[0], $cord[1]);
         }
@@ -349,18 +353,72 @@ class Board
     private function excludeCell(int $x, int $y)
     {
         if ($x >= 0 && $x < $this->width && $y >= 0 && $y < $this->height) {
-            if ($this->tiles[$x][$y] === TileState::FREE) {
-                $this->tiles[$x][$y] = TileState::EXCLUDED;
+            if ($this->tiles[$x][$y][0] === TileState::FREE) {
+                $this->tiles[$x][$y][0] = TileState::EXCLUDED;
             }
+        }
+    }
+
+    function saveBoardToFile($fileName, $boardRepresentation)
+    {
+        try {
+            $file = fopen($fileName, "a");
+            if ($file) {
+                fwrite($file, $boardRepresentation . PHP_EOL);
+                fclose($file);
+            } else {
+            }
+        } catch (Exception $e) {
+            echo "Wystąpił błąd: " . $e->getMessage();
+        }
+    }
+
+    function stringBoardRepresentation()
+    {
+        $encodedString = $this->width . ' ' . $this->height . ' ' . $this->pxlTileSize . ' ';
+        for ($x = 0; $x < $this->width; $x++) {
+            for ($y = 0; $y < $this->height; $y++) {
+                if ($this->tiles[$x][$y][0] === TileState::OCCUPIED) {
+                    $encodedString .= $this->tiles[$x][$y][1];
+                } else $encodedString .= "0";
+            }
+        }
+        return $encodedString;
+    }
+
+    function decodeBoardString($boardRepresentation)
+    {
+        for ($i = 0; $i < strlen($boardRepresentation); $i++) {
+            $tileClass = $this->getShipClass($boardRepresentation[$i]);
+            echo "<script>document.querySelectorAll('#board-container > div')[$i].classList.add('$tileClass')</script>";
         }
     }
 }
 
-if ($_SERVER["REQUEST_METHOD"] == "GET" && isset($_GET['width']) && isset($_GET['height']) && isset($_GET['pxlTileSize'])) {
-    $width =  intval($_GET['width']);
-    $height = intval($_GET['height']);
-    $pxlTileSize = intval($_GET['pxlTileSize']);
-    $game = new Board($width, $height, $pxlTileSize);
+
+function createFileNrForm()
+{
+    $lineCount = count(file('unique-boards.txt'));
+
+    echo '<h2>Formularz wyboru planszy</h2>';
+    echo '<p>Liczba linii w pliku unique-boards.txt: ' . $lineCount . '</p>';
+    echo '<form action="index.php" method="get">';
+    echo '<label for="boardIndex">Wybierz indeks planszy (od 0 do ' . $lineCount . '):</label>';
+    echo '<input type="number" id="boardIndex" name="boardIndex" min="' . "0" . '" max="' . $lineCount . '" required>';
+    echo '<input type="submit" value="Wybierz">';
+    echo '</form>';
+}
+
+if ($_SERVER["REQUEST_METHOD"] == "GET" && isset($_GET['import']) && $_GET['import'] == "on") createFileNrForm();
+else if (isset($_GET['boardIndex'])) {
+    $lines = file('unique-boards.txt', FILE_IGNORE_NEW_LINES);
+    $id = $_GET['boardIndex'];
+    $parts = explode(" ", $lines[$id]);
+    $game = new Board($parts[0], $parts[1], $parts[2]);
+    $game->create_board();
+    $game->decodeBoardString($parts[3]);
+} else if ($_SERVER["REQUEST_METHOD"] == "GET" && isset($_GET['width']) && isset($_GET['height']) && isset($_GET['pxlTileSize'])) {
+    $game = new Board(intval($_GET['width']), intval($_GET['height']), intval($_GET['pxlTileSize']));
     $game->create_board();
 
     try {
@@ -369,11 +427,16 @@ if ($_SERVER["REQUEST_METHOD"] == "GET" && isset($_GET['width']) && isset($_GET[
         $game->placeTripleShip(isset($_GET['ships3']) ? intval($_GET['ships3']) : 0);
         $game->placeDoubleShip(isset($_GET['ships2']) ? intval($_GET['ships2']) : 0);
         $game->placeSingleShip(isset($_GET['ships1']) ? intval($_GET['ships1']) : 0);
-    } catch (Throwable $th) {
 
+        if (isset($_GET['saveMode']) && $_GET['saveMode'] == "auto") {
+            $boardRepresentation = $game->stringBoardRepresentation();
+            $game->saveBoardToFile('unique-boards.txt', $boardRepresentation);
+        }
+    } catch (Throwable $th) {
         echo "Wystąpił problem podczas generacji planszy wskutek braku miejsca na wszystkie statki (plansza jest za mała): " . $th->getMessage();
         echo "<script>document.querySelector('#board-container').remove()</script>";
         echo '<br><button id="retryButton" onclick="location.reload()">Spróbuj ponownie</button>';
         echo '<button id="returnButton" onclick="window.location.href = \'form.php\'">Powrót do formularza</button>';
+        return;
     }
 }

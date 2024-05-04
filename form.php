@@ -26,9 +26,10 @@
                         <option value="none">Brak zapisu</option>
                     </select>
                     <hr>
-                    <label for="importFile">Plansza i ułożenie statków z pliku:</label>
-                    <input type="file" id="importFile" name="importFile">
-
+                    <div id="importWrapper">
+                        <label for="import">Plansza i ułożenie statków z pliku:</label>
+                        <input type="checkbox" name="import" id="import">
+                    </div>
                 </fieldset>
             </div>
 
@@ -54,7 +55,7 @@
             </div>
         </div>
 
-        <input type="submit" value="GENERUJ">
+        <input type="submit" id="submit" value="GENERUJ">
     </form>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
