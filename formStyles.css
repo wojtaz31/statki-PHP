@@ -40,7 +40,7 @@ h2 {
     color: #333333;
 }
 
-hr{
+hr {
     width: 100%;
 }
 
@@ -67,6 +67,12 @@ input[type="submit"] {
     cursor: pointer;
 }
 
-#randomBoard {
-    margin-top: 1em;
+label[for="importFile"]{
+    font-size: 110%;
+}
+
+#importFile {
+    padding: 10px;
+    border-radius: 4px;
+    font-size: 15px;
 }

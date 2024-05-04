@@ -14,7 +14,7 @@ class Board
     public int $pxlTileSize;
     public array $tiles;
 
-    function __construct(int $width = 10, int $height = 10, int $pxlTileSize = 80)
+    function __construct(int $width = 10, int $height = 10, int $pxlTileSize = 70)
     {
         $this->width = $width;
         $this->height = $height;
@@ -78,12 +78,14 @@ class Board
             $valid = false;
             $x = 0;
             $y = 0;
-
+            $counter = 0;
             while (!$valid) {
+                if ($counter > 500) throw new Exception("Błąd podczas generowania jednomasztowych statków");
                 $x = rand(0, $this->width - 1);
                 $y = rand(0, $this->height - 1);
 
                 if ($this->tiles[$x][$y] === TileState::FREE) $valid = true;
+                $counter += 1;
             }
             $this->tiles[$x][$y] = TileState::OCCUPIED;
             $class = chr(65 + $x) . $y;
@@ -190,7 +192,7 @@ class Board
                 $placement = $possiblePlacements[array_rand($possiblePlacements)];
                 $this->placeShip($placement, 2);
                 $this->updatePossiblePlacements($possiblePlacements);
-            }
+            } else throw new Exception("Błąd podczas generowania dwumasztowych statków");
         }
     }
 
@@ -228,7 +230,7 @@ class Board
                 $placement = $possiblePlacements[array_rand($possiblePlacements)];
                 $this->placeShip($placement, 3);
                 $this->updatePossiblePlacements($possiblePlacements);
-            }
+            } else throw new Exception("Błąd podczas generowania trzymasztowych statków");
         }
     }
 
@@ -288,11 +290,11 @@ class Board
                 $placement = $possiblePlacements[array_rand($possiblePlacements)];
                 $this->placeShip($placement, 4);
                 $this->updatePossiblePlacements($possiblePlacements);
-            }
+            } else throw new Exception("Błąd podczas generowania czteromasztowych statków");
         }
     }
 
-    function placeQunitaShip(int $number)
+    function placeQuintaShip(int $number)
     {
         $possiblePlacements = [];
 
@@ -313,10 +315,10 @@ class Board
                 if ($this->canPlaceShipVertically($x + 1, $y - 1, 3) && $this->checkTile($x, $y - 1) && $this->checkTile($x, $y + 1)) {
                     array_push($possiblePlacements, [[$x + 1, $y - 1], [$x + 1, $y], [$x + 1, $y + 1], [$x, $y - 1], [$x, $y + 1]]);
                 }
-                if ($this->canPlaceShipHorizontally($x - 1, $y - 1, 3) && $this->checkTile($x - 1, $y) && $this->checkTile($x + 1, $y) ) {
+                if ($this->canPlaceShipHorizontally($x - 1, $y - 1, 3) && $this->checkTile($x - 1, $y) && $this->checkTile($x + 1, $y)) {
                     array_push($possiblePlacements, [[$x - 1, $y - 1], [$x, $y - 1], [$x + 1, $y - 1], [$x - 1, $y], [$x + 1, $y]]);
                 }
-                if ($this->canPlaceShipHorizontally($x - 1, $y + 1, 3) && $this->checkTile($x - 1, $y) && $this->checkTile($x + 1, $y) ) {
+                if ($this->canPlaceShipHorizontally($x - 1, $y + 1, 3) && $this->checkTile($x - 1, $y) && $this->checkTile($x + 1, $y)) {
                     array_push($possiblePlacements, [[$x - 1, $y + 1], [$x, $y + 1], [$x + 1, $y + 1], [$x - 1, $y], [$x + 1, $y]]);
                 }
             }
@@ -327,7 +329,7 @@ class Board
                 $placement = $possiblePlacements[array_rand($possiblePlacements)];
                 $this->placeShip($placement, 5);
                 $this->updatePossiblePlacements($possiblePlacements);
-            }
+            } else throw new Exception("Błąd podczas generowania pięciomasztowych statków");
         }
     }
 
@@ -354,10 +356,24 @@ class Board
     }
 }
 
-if ($_SERVER["REQUEST_METHOD"] == "GET" && isset($_GET['width']) && isset($_GET['height']) && $_GET['pxlTileSize']) {
+if ($_SERVER["REQUEST_METHOD"] == "GET" && isset($_GET['width']) && isset($_GET['height']) && isset($_GET['pxlTileSize'])) {
     $width =  intval($_GET['width']);
     $height = intval($_GET['height']);
     $pxlTileSize = intval($_GET['pxlTileSize']);
     $game = new Board($width, $height, $pxlTileSize);
     $game->create_board();
+
+    try {
+        $game->placeQuintaShip(isset($_GET['ships5']) ? intval($_GET['ships5']) : 0);
+        $game->placeQuadraShip(isset($_GET['ships4']) ? intval($_GET['ships4']) : 0);
+        $game->placeTripleShip(isset($_GET['ships3']) ? intval($_GET['ships3']) : 0);
+        $game->placeDoubleShip(isset($_GET['ships2']) ? intval($_GET['ships2']) : 0);
+        $game->placeSingleShip(isset($_GET['ships1']) ? intval($_GET['ships1']) : 0);
+    } catch (Throwable $th) {
+
+        echo "Wystąpił problem podczas generacji planszy wskutek braku miejsca na wszystkie statki (plansza jest za mała): " . $th->getMessage();
+        echo "<script>document.querySelector('#board-container').remove()</script>";
+        echo '<br><button id="retryButton" onclick="location.reload()">Spróbuj ponownie</button>';
+        echo '<button id="returnButton" onclick="window.location.href = \'form.php\'">Powrót do formularza</button>';
+    }
 }
