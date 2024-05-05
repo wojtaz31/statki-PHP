@@ -7,30 +7,32 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    min-height: 100dvh;;
+    min-height: 100dvh;
+    ;
 }
 
-.one-mast{
+.one-mast {
     background-color: aqua;
 }
 
-.two-mast{
+.two-mast {
     background-color: bisque;
 }
 
-.three-mast{
+.three-mast {
     background-color: blueviolet;
 }
 
-.four-mast{
+.four-mast {
     background-color: brown;
 }
 
-.five-mast{
+.five-mast {
     background-color: coral;
 }
 
-#retryButton, #returnButton {
+#retryButton,
+#returnButton {
     margin: 10px;
     padding: 8px 16px;
     font-size: 16px;
@@ -39,6 +41,13 @@ body {
     border-radius: 4px;
 }
 
-#retryButton:hover, #returnButton:hover {
+#retryButton:hover,
+#returnButton:hover {
     background-color: #9b9ea1;
+}
+
+#nrForm {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25em;
 }
